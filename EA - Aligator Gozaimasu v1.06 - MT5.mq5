@@ -162,6 +162,9 @@ double GetAlligator(int tfIdx, int buffer, int shift)
 
 // Buffer 0 = Jaw, Buffer 1 = Teeth, Buffer 2 = Lips
 double GetJaw(int tfIdx, int shift)   { return GetAlligator(tfIdx, 0, shift); }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 double GetTeeth(int tfIdx, int shift) { return GetAlligator(tfIdx, 1, shift); }
 double GetLips(int tfIdx, int shift)  { return GetAlligator(tfIdx, 2, shift); }
 
@@ -189,6 +192,9 @@ double GetStochMain(int tfIdx, int shift)
    return val[0];
   }
 
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 double GetStochSignal(int tfIdx, int shift)
   {
    double val[];
@@ -235,7 +241,7 @@ bool IsBullishTF(ENUM_TIMEFRAMES tf, bool isLowestTF)
    double stochSignal = GetStochSignal(idx, 0);
    double rsi   = GetRSI(idx, 0);
 
-   // Alligator check
+// Alligator check
    bool alligatorBullish;
    if(isLowestTF)
      {
@@ -251,11 +257,11 @@ bool IsBullishTF(ENUM_TIMEFRAMES tf, bool isLowestTF)
    if(!alligatorBullish)
       return false;
 
-   // Stochastic: main < 80 AND main > signal
+// Stochastic: main < 80 AND main > signal
    if(stochMain >= 80 || stochMain <= stochSignal)
       return false;
 
-   // RSI < 70
+// RSI < 70
    if(rsi >= 70)
       return false;
 
@@ -290,11 +296,11 @@ bool IsBearishTF(ENUM_TIMEFRAMES tf, bool isLowestTF)
    if(!alligatorBearish)
       return false;
 
-   // Stochastic: main > 20 AND main < signal
+// Stochastic: main > 20 AND main < signal
    if(stochMain <= 20 || stochMain >= stochSignal)
       return false;
 
-   // RSI > 30
+// RSI > 30
    if(rsi <= 30)
       return false;
 
@@ -317,16 +323,16 @@ int OnInit()
    CurrentBuyLots = Lots;
    CurrentSellLots = Lots;
 
-   // Determine pip value for 3/5 digit brokers
+// Determine pip value for 3/5 digit brokers
    PipValue = 1;
    if(_Digits == 3 || _Digits == 5)
       PipValue = 10;
 
-   // Set up trade object
+// Set up trade object
    trade.SetExpertMagicNumber(MagicNumber);
    trade.SetDeviationInPoints(4);
 
-   // Create indicator handles for all 7 timeframes
+// Create indicator handles for all 7 timeframes
    for(int i = 0; i < 7; i++)
      {
       h_alligator[i] = iAlligator(_Symbol, TF_Array[i], 13, 8, 8, 5, 5, 3, MODE_SMMA, PRICE_MEDIAN);
@@ -342,9 +348,9 @@ int OnInit()
         }
      }
 
-   // Also create handles for PERIOD_CURRENT if mode AA
-   // (PERIOD_CURRENT may differ from any of the 7 above)
-   // We'll handle this by checking at runtime
+// Also create handles for PERIOD_CURRENT if mode AA
+// (PERIOD_CURRENT may differ from any of the 7 above)
+// We'll handle this by checking at runtime
 
    RunAuthorization();
    return(INIT_SUCCEEDED);
@@ -357,10 +363,14 @@ void OnDeinit(const int reason)
   {
    for(int i = 0; i < 7; i++)
      {
-      if(h_alligator[i] != INVALID_HANDLE)  IndicatorRelease(h_alligator[i]);
-      if(h_ao[i] != INVALID_HANDLE)         IndicatorRelease(h_ao[i]);
-      if(h_stoch[i] != INVALID_HANDLE)      IndicatorRelease(h_stoch[i]);
-      if(h_rsi[i] != INVALID_HANDLE)        IndicatorRelease(h_rsi[i]);
+      if(h_alligator[i] != INVALID_HANDLE)
+         IndicatorRelease(h_alligator[i]);
+      if(h_ao[i] != INVALID_HANDLE)
+         IndicatorRelease(h_ao[i]);
+      if(h_stoch[i] != INVALID_HANDLE)
+         IndicatorRelease(h_stoch[i]);
+      if(h_rsi[i] != INVALID_HANDLE)
+         IndicatorRelease(h_rsi[i]);
      }
   }
 
@@ -391,48 +401,90 @@ void OnTick()
 //+------------------------------------------------------------------+
 void OnEveryTick()
   {
-   // Determine chart TF string for display
+// Determine chart TF string for display
    ENUM_TIMEFRAMES currentPeriod = (ENUM_TIMEFRAMES)Period();
    switch(currentPeriod)
      {
-      case PERIOD_M1:  CTF = "M1";  break;
-      case PERIOD_M5:  CTF = "M5";  break;
-      case PERIOD_M15: CTF = "M15"; break;
-      case PERIOD_M30: CTF = "M30"; break;
-      case PERIOD_H1:  CTF = "H1";  break;
-      case PERIOD_H4:  CTF = "H4";  break;
-      case PERIOD_D1:  CTF = "D1";  break;
-      case PERIOD_W1:  CTF = "W1";  break;
-      case PERIOD_MN1: CTF = "MN";  break;
-      default:         CTF = "??";  break;
+      case PERIOD_M1:
+         CTF = "M1";
+         break;
+      case PERIOD_M5:
+         CTF = "M5";
+         break;
+      case PERIOD_M15:
+         CTF = "M15";
+         break;
+      case PERIOD_M30:
+         CTF = "M30";
+         break;
+      case PERIOD_H1:
+         CTF = "H1";
+         break;
+      case PERIOD_H4:
+         CTF = "H4";
+         break;
+      case PERIOD_D1:
+         CTF = "D1";
+         break;
+      case PERIOD_W1:
+         CTF = "W1";
+         break;
+      case PERIOD_MN1:
+         CTF = "MN";
+         break;
+      default:
+         CTF = "??";
+         break;
      }
 
-   // Auto-compounding lot calculation
+// Auto-compounding lot calculation
    double equity = AccountInfoDouble(ACCOUNT_EQUITY);
    switch(AutoCompounding_Mode)
      {
-      case A: EntryLots = Lots; break;
-      case B: EntryLots = NormalizeDouble(Lots / 50.0 * equity, 2); break;
-      case C: EntryLots = NormalizeDouble(Lots / 100.0 * equity, 2); break;
-      case D: EntryLots = NormalizeDouble(Lots / 1000.0 * equity, 2); break;
-      case E: EntryLots = NormalizeDouble(Lots / 10000.0 * equity, 2); break;
-      case F: EntryLots = NormalizeDouble(Lots / 100000.0 * equity, 2); break;
+      case A:
+         EntryLots = Lots;
+         break;
+      case B:
+         EntryLots = NormalizeDouble(Lots / 50.0 * equity, 2);
+         break;
+      case C:
+         EntryLots = NormalizeDouble(Lots / 100.0 * equity, 2);
+         break;
+      case D:
+         EntryLots = NormalizeDouble(Lots / 1000.0 * equity, 2);
+         break;
+      case E:
+         EntryLots = NormalizeDouble(Lots / 10000.0 * equity, 2);
+         break;
+      case F:
+         EntryLots = NormalizeDouble(Lots / 100000.0 * equity, 2);
+         break;
      }
 
-   // Determine TMode string
+// Determine TMode string
    switch(MultiTimeFrame_Mode)
      {
-      case AA: TMode = "No MTF (" + CTF + ")"; break;
-      case BB: TMode = "Scalperz (H1>M15>M5>M1)"; break;
-      case CC: TMode = "Intradayz (H4>H1>M15>M5)"; break;
-      case DD: TMode = "Swingz (D1>H4>H1>M15)"; break;
-      case EE: TMode = "Positionz (W1>D1>H4>H1)"; break;
+      case AA:
+         TMode = "No MTF (" + CTF + ")";
+         break;
+      case BB:
+         TMode = "Scalperz (H1>M15>M5>M1)";
+         break;
+      case CC:
+         TMode = "Intradayz (H4>H1>M15>M5)";
+         break;
+      case DD:
+         TMode = "Swingz (D1>H4>H1>M15)";
+         break;
+      case EE:
+         TMode = "Positionz (W1>D1>H4>H1)";
+         break;
      }
 
-   // Expiry check
+// Expiry check
    ExpiryCheck();
 
-   // Weekday filter
+// Weekday filter
    MqlDateTime dt;
    TimeLocal(dt);
    int dow = dt.day_of_week;
@@ -444,24 +496,25 @@ void OnEveryTick()
    if(!dayAllowed)
       return;
 
-   // Hours filter
+// Hours filter
    int hour0 = dt.hour;
    bool hourAllowed = false;
    if(HoursFrom < HoursTo)
       hourAllowed = (hour0 >= HoursFrom && hour0 < HoursTo);
-   else if(HoursFrom > HoursTo)
-      hourAllowed = (hour0 < HoursTo || hour0 >= HoursFrom);
    else
-      hourAllowed = true; // HoursFrom == HoursTo means 24h
+      if(HoursFrom > HoursTo)
+         hourAllowed = (hour0 < HoursTo || hour0 >= HoursFrom);
+      else
+         hourAllowed = true; // HoursFrom == HoursTo means 24h
 
    if(!hourAllowed)
       return;
 
-   // Check signals based on MTF mode
+// Check signals based on MTF mode
    CheckBuySignal();
    CheckSellSignal();
 
-   // Trailing stop
+// Trailing stop
    if(TrailingStop_Enabled)
       DoTrailingStop();
   }
@@ -540,7 +593,7 @@ void CheckBuySignal()
               }
            }
         }
-        break;
+      break;
      }
 
    if(buySignal)
@@ -604,7 +657,7 @@ void CheckSellSignal()
               }
            }
         }
-        break;
+      break;
      }
 
    if(sellSignal)
@@ -763,10 +816,10 @@ double GetLastDealProfit(double &lastLots)
 //+------------------------------------------------------------------+
 void BuyOrderWithMgm()
   {
-   // Send notification
+// Send notification
    SendBuyNotification();
 
-   // Martingale lot computation
+// Martingale lot computation
    double lastLots = Lots;
    double profit = GetLastDealProfit(lastLots);
    CurrentBuyLots = lastLots;
@@ -777,12 +830,13 @@ void BuyOrderWithMgm()
       if(LotsResetOnProfit)
          CurrentBuyLots = Lots;
      }
-   else if(profit < 0)
-     {
-      CurrentBuyLots = CurrentBuyLots * LotMultiplierOnLoss;
-      if(LotsResetOnLoss)
-         CurrentBuyLots = Lots;
-     }
+   else
+      if(profit < 0)
+        {
+         CurrentBuyLots = CurrentBuyLots * LotMultiplierOnLoss;
+         if(LotsResetOnLoss)
+            CurrentBuyLots = Lots;
+        }
 
    if(CurrentBuyLots > MaxLots)
       CurrentBuyLots = MaxLots;
@@ -790,14 +844,18 @@ void BuyOrderWithMgm()
    double lotvalue = NormalizeDouble(CurrentBuyLots, 2);
    double minLot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    double maxLot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
-   if(lotvalue < minLot) lotvalue = minLot;
-   if(lotvalue > maxLot) lotvalue = maxLot;
+   if(lotvalue < minLot)
+      lotvalue = minLot;
+   if(lotvalue > maxLot)
+      lotvalue = maxLot;
 
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double SL = ask - Stoploss_Pips * PipValue * _Point;
-   if(Stoploss_Pips == 0) SL = 0;
+   if(Stoploss_Pips == 0)
+      SL = 0;
    double TP = ask + Takeprofit_Pips * PipValue * _Point;
-   if(Takeprofit_Pips == 0) TP = 0;
+   if(Takeprofit_Pips == 0)
+      TP = 0;
 
    SL = NormalizeDouble(SL, _Digits);
    TP = NormalizeDouble(TP, _Digits);
@@ -841,12 +899,13 @@ void SellOrderWithMgm()
       if(LotsResetOnProfit)
          CurrentSellLots = Lots;
      }
-   else if(profit < 0)
-     {
-      CurrentSellLots = CurrentSellLots * LotMultiplierOnLoss;
-      if(LotsResetOnLoss)
-         CurrentSellLots = Lots;
-     }
+   else
+      if(profit < 0)
+        {
+         CurrentSellLots = CurrentSellLots * LotMultiplierOnLoss;
+         if(LotsResetOnLoss)
+            CurrentSellLots = Lots;
+        }
 
    if(CurrentSellLots > MaxLots)
       CurrentSellLots = MaxLots;
@@ -854,14 +913,18 @@ void SellOrderWithMgm()
    double lotvalue = NormalizeDouble(CurrentSellLots, 2);
    double minLot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    double maxLot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
-   if(lotvalue < minLot) lotvalue = minLot;
-   if(lotvalue > maxLot) lotvalue = maxLot;
+   if(lotvalue < minLot)
+      lotvalue = minLot;
+   if(lotvalue > maxLot)
+      lotvalue = maxLot;
 
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double SL = bid + Stoploss_Pips * PipValue * _Point;
-   if(Stoploss_Pips == 0) SL = 0;
+   if(Stoploss_Pips == 0)
+      SL = 0;
    double TP = bid - Takeprofit_Pips * PipValue * _Point;
-   if(Takeprofit_Pips == 0) TP = 0;
+   if(Takeprofit_Pips == 0)
+      TP = 0;
 
    SL = NormalizeDouble(SL, _Digits);
    TP = NormalizeDouble(TP, _Digits);
@@ -968,22 +1031,23 @@ void DoTrailingStop()
                  }
               }
            }
-         else if(posInfo.PositionType() == POSITION_TYPE_SELL)
-           {
-            if(openPrice - bid > TrailingStop_Pips * PipValue * _Point)
+         else
+            if(posInfo.PositionType() == POSITION_TYPE_SELL)
               {
-               double newSL = bid + TrailingStop_Pips * PipValue * _Point;
-               if(sl > newSL + TrailingGap_Pips * PipValue * _Point || sl == 0)
+               if(openPrice - bid > TrailingStop_Pips * PipValue * _Point)
                  {
-                  double newTP = tp;
-                  if(NewTakeProfit_Pips != 0)
-                     newTP = bid - (NewTakeProfit_Pips + TrailingStop_Pips) * PipValue * _Point;
-                  newSL = NormalizeDouble(newSL, _Digits);
-                  newTP = NormalizeDouble(newTP, _Digits);
-                  trade.PositionModify(posInfo.Ticket(), newSL, newTP);
+                  double newSL = bid + TrailingStop_Pips * PipValue * _Point;
+                  if(sl > newSL + TrailingGap_Pips * PipValue * _Point || sl == 0)
+                    {
+                     double newTP = tp;
+                     if(NewTakeProfit_Pips != 0)
+                        newTP = bid - (NewTakeProfit_Pips + TrailingStop_Pips) * PipValue * _Point;
+                     newSL = NormalizeDouble(newSL, _Digits);
+                     newTP = NormalizeDouble(newTP, _Digits);
+                     trade.PositionModify(posInfo.Ticket(), newSL, newTP);
+                    }
                  }
               }
-           }
         }
      }
   }
@@ -1009,26 +1073,27 @@ void ChartCommentDisplay()
          "\n Buy: ", CountBuy(), " | Sell: ", CountSell(),
          "\n");
      }
-   else if(!isAuthorized() && !IsDemo() && (TimeCurrent() < expDate))
-     {
-      Comment(
-         "\n ", Copyright,
-         "\n ", Date, "\n",
-         "\n ", AuthMessage(), "\n",
-         "\n ", EA_Name,
-         "\n Starting Lot: ", Lots,
-         "\n Layer Multiplier: ", MartingaleMultiplier,
-         "\n Equity: $", NormalizeDouble(AccountInfoDouble(ACCOUNT_EQUITY), 2),
-         "\n Buy: ", CountBuy(), " | Sell: ", CountSell(),
-         "\n\n ExpireDate: ", expStr,
-         "\n");
-     }
    else
-     {
-      Alert(ExpiryAlert);
-      ExpertRemove();
-      Comment("\n" + ExpiryAlert);
-     }
+      if(!isAuthorized() && !IsDemo() && (TimeCurrent() < expDate))
+        {
+         Comment(
+            "\n ", Copyright,
+            "\n ", Date, "\n",
+            "\n ", AuthMessage(), "\n",
+            "\n ", EA_Name,
+            "\n Starting Lot: ", Lots,
+            "\n Layer Multiplier: ", MartingaleMultiplier,
+            "\n Equity: $", NormalizeDouble(AccountInfoDouble(ACCOUNT_EQUITY), 2),
+            "\n Buy: ", CountBuy(), " | Sell: ", CountSell(),
+            "\n\n ExpireDate: ", expStr,
+            "\n");
+        }
+      else
+        {
+         Alert(ExpiryAlert);
+         ExpertRemove();
+         Comment("\n" + ExpiryAlert);
+        }
   }
 
 //+------------------------------------------------------------------+
@@ -1108,15 +1173,17 @@ string AuthMessage()
      {
       return("Demo account detected.\n Account Authorized.\n Account Number: " + IntegerToString(accNum) + "\n Account Name: " + accName);
      }
-   else if((TimeCurrent() < expDate) && !isAuthorized())
-     {
-      return("Account " + IntegerToString(accNum) + " is Unauthorized, EA will expire soon.\n Trials Mode Activated.");
-     }
-   else if(isAuthorized())
-     {
-      return("Account Authorized.\n Account Number: " + IntegerToString(accNum) + "\n Account Name: " + accName);
-     }
    else
-      return(ExpiryAlert);
+      if((TimeCurrent() < expDate) && !isAuthorized())
+        {
+         return("Account " + IntegerToString(accNum) + " is Unauthorized, EA will expire soon.\n Trials Mode Activated.");
+        }
+      else
+         if(isAuthorized())
+           {
+            return("Account Authorized.\n Account Number: " + IntegerToString(accNum) + "\n Account Name: " + accName);
+           }
+         else
+            return(ExpiryAlert);
   }
 //+------------------------------------------------------------------+
