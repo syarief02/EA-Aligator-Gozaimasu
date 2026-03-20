@@ -1,6 +1,6 @@
 # 🐊 EA Aligator Gozaimasu v1.06
 
-> **What is this?** A fully automated Expert Advisor for MetaTrader 4 that trades based on the **Bill Williams Alligator** indicator, confirmed by **Awesome Oscillator (AO)**, **RSI**, and **Stochastic**. It buys in uptrends and sells in downtrends, with multi-timeframe confirmation to filter out noise.
+> **What is this?** A fully automated Expert Advisor for MetaTrader 4 **and MetaTrader 5** that trades based on the **Bill Williams Alligator** indicator, confirmed by **Awesome Oscillator (AO)**, **RSI**, and **Stochastic**. It buys in uptrends and sells in downtrends, with multi-timeframe confirmation to filter out noise.
 
 ---
 
@@ -374,9 +374,15 @@ A: Yes. Open MetaTrader 4 → **Strategy Tester** (Ctrl+R), select the EA, choos
 
 ```
 EA Aligator Gozaimasu/
-├── EA - Aligator Gozaimasu v1.06 - .mq4    ← Source code
-└── README.md                                 ← This documentation
+├── MT4/
+│   └── EA - Aligator Gozaimasu v1.06 - .ex4    ← Compiled MT4 EA
+├── MT5/
+│   └── EA - Aligator Gozaimasu v1.06 - MT5.ex5 ← Compiled MT5 EA
+├── .gitignore                                    ← Source code protection
+└── README.md                                     ← This documentation
 ```
+
+> **Note:** Source code files (`.mq4`/`.mq5`) are excluded from the repository via `.gitignore` to protect intellectual property. Only compiled `.ex4`/`.ex5` files are distributed.
 
 ---
 
