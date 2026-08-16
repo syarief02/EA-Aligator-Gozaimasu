@@ -289,7 +289,7 @@ The EA has a built-in authorization and expiry system:
 - **Demo accounts:** Always allowed, no restrictions
 - **Live accounts:** Work during the trial period (before expiry date)
 - **After expiry:** Only authorized account numbers/names can continue using the EA
-- **Current expiry:** `2026-03-28 23:55`
+- **Current expiry:** `2026-09-30 23:55`
 
 If the EA expires on your account, it will:
 1. Show an alert message
